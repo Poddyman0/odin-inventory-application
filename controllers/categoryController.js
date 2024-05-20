@@ -116,27 +116,52 @@ exports.category_delete_get = asyncHandler(async (req, res, next) => {
 
 
 // Handle Category delete on POST.
-exports.category_delete_post = asyncHandler(async (req, res, next) => {
-  // Get details of author and all their books (in parallel)
-  const [category, allItemsInCategory] = await Promise.all([
-    categoryModelController.findById(req.params.id).exec(),
-    itemModelController.find({ category: req.params.id }, "name description").exec(),
-  ]);
+exports.category_delete_post = [
+  (req, res, next) => {
+    if (!Array.isArray(req.body.category)) {
+      req.body.category =
+        typeof req.body.category === "undefined" ? [] : [req.body.category];
+    }
+    next();
+  },
+  body("password", "Password must be Password123!")
+    .trim()
+    .equals("Password123!")
+    .withMessage("Password must be Password123!")
+    .escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
 
-  if (allItemsInCategory.length > 0) {
-    // Author has books. Render in same way as for GET route.
-    res.render("category_delete", {
-      title: "Delete Category",
-      category: category,
-      category_items: allItemsInCategory,
-    });
-    return;
-  } else {
-    // Author has no books. Delete object and redirect to the list of authors.
-    await categoryModelController.findByIdAndDelete(req.body.categoryid);
-    res.redirect("/catalog/categorys");
-  }
-});
+    // Get details of author and all their books (in parallel)
+    const [category, allItemsInCategory] = await Promise.all([
+      categoryModelController.findById(req.params.id).exec(),
+      itemModelController.find({ category: req.params.id }, "name description").exec(),
+    ]);
+
+    if (allItemsInCategory.length > 0) {
+      // Author has books. Render in same way as for GET route.
+      res.render("category_delete", {
+        title: "Delete Category",
+        category: category,
+        category_items: allItemsInCategory,
+      });
+      return;
+    } else if (!errors.isEmpty()) {
+      res.render("category_delete", {
+        title: "Delete Category",
+        category: category,
+        category_items: allItemsInCategory,
+        errors: errors.array(),
+
+      });
+      return;
+    } else {
+      // Author has no books. Delete object and redirect to the list of authors.
+      await categoryModelController.findByIdAndDelete(req.body.categoryid);
+      res.redirect("/catalog/categorys");
+    }
+  }),
+]
 
 
 // Display Category update form on GET.

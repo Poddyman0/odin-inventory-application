@@ -161,24 +161,47 @@ exports.item_delete_get = asyncHandler(async (req, res, next) => {
 });
 
 // Handle item delete on POST.
-exports.item_delete_post = asyncHandler(async (req, res, next) => {
-  const [category, item, allCategorysInItem] = await Promise.all([
-    categoryModelController.findById(req.params.id).exec(),
-    itemModelController.findById(req.params.id).exec(),
-    itemModelController.find({ name: req.params.id }, "name description").exec(),
-  ]);
-  
-  if (allCategorysInItem.length > 0) { // Changed condition to check length of allCategorysInItem
-    res.render("item_delete", {
-      title: "Delete Item",
-      item_categorys: allCategorysInItem,
-    });
-    return; // Added return statement to exit the function
-  } else {
-    await itemModelController.findByIdAndDelete(req.body.itemid); // Corrected method to delete item
-    res.redirect("/catalog/items");
-  }
-});
+exports.item_delete_post = [
+  (req, res, next) => {
+    if (!Array.isArray(req.body.category)) {
+      req.body.category =
+        typeof req.body.category === "undefined" ? [] : [req.body.category];
+    }
+    next();
+  },
+  body("password", "Password must be Password123!")
+    .trim()
+    .equals("Password123!")
+    .withMessage("Password must be Password123!")
+    .escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    const [category, item, allCategorysInItem] = await Promise.all([
+      categoryModelController.findById(req.params.id).exec(),
+      itemModelController.findById(req.params.id).populate("category").exec(),
+      itemModelController.find({ name: req.params.id }, "name description").exec(),
+    ]);
+    
+    if (item === null) {
+      res.redirect("/catalog/items");
+      return; // Added return statement to exit the function after redirect
+    }
+    console.log("item", item)
+    
+    if (!errors.isEmpty()) {
+      res.render("item_delete", {
+        title: "Delete Item:",
+        item: item,
+        category: category,
+        item_categorys: allCategorysInItem,
+        errors: errors.array(),
+      });
+    } else {
+      await itemModelController.findByIdAndDelete(req.body.itemid); // Corrected method to delete item
+      res.redirect("/catalog/items");
+    }
+}),
+]
 
 
 // Display item update form on GET.
