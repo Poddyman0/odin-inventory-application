@@ -45,6 +45,45 @@ I developed an Inventory Management App designed for an imaginary store to pract
 
 
 
+To run this Express app locally, follow these steps:
+
+Ensure you have Node.js and npm installed: You can check this by running the following commands in your terminal:
+
+bash
+Copy code
+node -v
+npm -v
+If you don’t have them installed, download and install Node.js from https://nodejs.org/, which includes npm.
+
+Navigate to your project directory: Open your terminal or command prompt and navigate to the root of your project:
+
+bash
+Copy code
+cd path/to/your/project
+Install dependencies: Run the following command to install all the necessary dependencies specified in your package.json:
+
+bash
+Copy code
+npm install
+Set up environment variables (optional): If the project requires environment variables, you should create a .env file in the root of your project and define those variables. For example:
+
+makefile
+Copy code
+PORT=3000
+DB_URI=your_database_uri
+Run the application:
+
+For production mode:
+bash
+Copy code
+npm start
+For development mode with live reloading (using nodemon):
+bash
+Copy code
+npm run serverstart
+The serverstart script sets up the environment variable DEBUG for detailed logging and runs the app using nodemon, which watches for file changes and automatically restarts the server.
+
+Open the app in your browser: By default, the app will run on port 3000. Open your browser and navigate to:
 
 
 
