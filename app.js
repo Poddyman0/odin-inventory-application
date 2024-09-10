@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config()
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -14,8 +15,8 @@ var app = express();
 // Set up mongoose connection
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const mongoDB = "mongodb+srv://george9ne:ceyO28jvGCEiIVnv@cluster0.tjrvmcw.mongodb.net/inventory_application_mongodb?retryWrites=true&w=majority&appName=Cluster0"
 
+const mongoDB = process.env.MONGO_URI
 main().catch((err) => console.log(err));
 async function main() {
   await mongoose.connect(mongoDB);
@@ -25,6 +26,13 @@ async function main() {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  next();
+})
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -54,11 +62,4 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-//george9ne
-// ceyO28jvGCEiIVnv
-// or Gzcbsjs5
-//mongodb+srv://george9ne:Gzcbsjs5@cluster0.tjrvmcw.mongodb.net/inventory_application_mongodb?retryWrites=true&w=majority&appName=Cluster0
 
-
-
-// mongodb+srv://george9ne:ceyO28jvGCEiIVnv@cluster0.tjrvmcw.mongodb.net/inventory_application_mongodb?retryWrites=true&w=majority&appName=Cluster0
